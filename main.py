@@ -1,17 +1,20 @@
 import pandas as pd
 import glob
 from fpdf import FPDF
+from pathlib import Path
+
 
 filepaths = glob.glob("invoices/*xlsx")
-pdf = FPDF(orientation='P',unit='mm',format='A4')
+
 
 for filepath in filepaths:
+    pdf = FPDF(orientation='P', unit='mm', format='A4')
     df = pd.read_excel(filepath, sheet_name="Sheet 1")
 
     pdf.add_page()
 
     # Invoice number
-    invoice_no = filepath.split('\\')[1].split('-')[0]
+    invoice_no = Path(filepath).stem.split('-')[0]
     invoice_date = filepath.split('-')[1].split('.')[:3]
     invoice_date = f"{invoice_date[2]}.{invoice_date[1]}.{invoice_date[0]}"
 
@@ -25,6 +28,7 @@ for filepath in filepaths:
 
     # Set table - head
     column_names = df.columns.tolist()
+    column_names = [item.replace('_', ' ').title() for item in column_names]
 
     for name in column_names:
         pdf.set_font(family="Times", style="B", size=11)
@@ -53,8 +57,8 @@ for filepath in filepaths:
     pdf.cell(w=0, h=20, txt=f"The total due amount is: {amount_counts} $", align="L", ln=1, border=0)
     pdf.line(10, 25, 200, 25)
 
-# Generate PDF
-pdf.output("invoice.pdf")
+    # Generate PDF
+    pdf.output(f"PDFs/{invoice_no}.pdf")
 
 
 
